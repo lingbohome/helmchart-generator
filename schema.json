@@ -31,6 +31,7 @@
                 "type": "string",
                 "maxLength": 256,
                 "x-shipper-ui": {
+                  "widget":"textarea",
                   "placeholder": "写个描述吧...",
                   "maxRows": 3
                 }
@@ -454,6 +455,7 @@
                 "maxLength":5000,
                 "x-shipper-ui": {
                     "widget":"textarea",
+                    "maxRows": 5,
                     "visibleIf":{
                       "enabledAppConfig":"true"
                     }
