@@ -115,7 +115,7 @@ data:
 
                     ingress:
                       enabled: {{ .Values.networking.enabledIngress | default false }} 
-                      className: {{- if .Values.networking.enabledIngress }}{{ .Values.networking.ingress.className | default "" }}{{- else }}""{{- end }}
+                      className: {{ if .Values.networking.enabledIngress }}{{ .Values.networking.ingress.className | default "" }}{{- else }}""{{- end }}
                       {{- if and .Values.networking.enabledIngress .Values.networking.ingress.annotations }}   
                       annotations:
                         {{- toYaml .Values.networking.ingress.annotations | nindent 4 }}
@@ -125,7 +125,7 @@ data:
                         # kubernetes.io/ingress.class: nginx
                         # kubernetes.io/tls-acme: "true"  
                       hosts:
-                        - host: {{- if .Values.networking.enabledIngress }}{{ .Values.networking.ingress.host | default "example.com" }}{{- else }}"example.com"{{- end }}
+                        - host: {{ if .Values.networking.enabledIngress }}{{ .Values.networking.ingress.host | default "example.com" }}{{- else }}"example.com"{{- end }}
                           paths:
                             - path: /
                               pathType: ImplementationSpecific    
@@ -138,7 +138,7 @@ data:
                     service:
                       type: {{ .Values.networking.serviceType | default "ClusterIP" }}
                       port: {{ .Values.networking.port | default 80 }}
-                      nodePort: {{- if eq .Values.networking.serviceType "NodePort" }}{{ .Values.networking.nodePort | default 30000 }}{{- else }}30000{{- end }}
+                      nodePort: {{ if eq .Values.networking.serviceType "NodePort" }}{{ .Values.networking.nodePort | default 30000 }}{{- else }}30000{{- end }}
 
                     {{- if .Values.advanced.startEntrySetting.args }}
                     args:
@@ -164,12 +164,12 @@ data:
 
                     healthCheck:
                       enabled: {{ .Values.advanced.enabledHealthCheck | default false }}
-                      httpPath: {{- if .Values.advanced.enabledHealthCheck }}{{ .Values.advanced.httpPathOfHealthCheck | default "/" }}{{- else }}"/"{{- end }}
+                      httpPath: {{ if .Values.advanced.enabledHealthCheck }}{{ .Values.advanced.httpPathOfHealthCheck | default "/" }}{{- else }}"/"{{- end }}
 
                     appConfig:
                       enabled: {{ .Values.advanced.enabledAppConfig | default false }}
-                      mountPath: {{- if .Values.advanced.enabledAppConfig }}{{ .Values.advanced.mountPathOfAppConfig | default "/var/appsettings.json" }}{{- else }}"/var/appsettings.json"{{- end }}
-                      fileName: {{- if .Values.advanced.enabledAppConfig }}{{ .Values.advanced.fileNameOfAppConfig | default "config.json" }}{{- else }}"config.json"{{- end }}
+                      mountPath: {{ if .Values.advanced.enabledAppConfig }}{{ .Values.advanced.mountPathOfAppConfig | default "/var/appsettings.json" }}{{- else }}"/var/appsettings.json"{{- end }}
+                      fileName: {{ if .Values.advanced.enabledAppConfig }}{{ .Values.advanced.fileNameOfAppConfig | default "config.json" }}{{- else }}"config.json"{{- end }}
                       fileContent: |
                         {{- if .Values.advanced.enabledAppConfig }}
                         {{ .Values.advanced.fileContentOfAppConfig | default "" }}
@@ -192,7 +192,7 @@ data:
 
                     tolerations: []
 
-                    affinity: {}  
+                    affinity: {}   
                     EOF
 
                     helm lint /helmchart/
@@ -211,7 +211,7 @@ data:
                         schema=https
                     fi
 
-                    mc alias set myoss $schema://{{- .Release.OSS.S3.Endpoint | default "minioserver.example.net" }} {{- .Release.OSS.S3.AccessKey }} {{- .Release.OSS.S3.SecretKey }} 
+                    mc alias set myoss $schema://{{- .Release.OSS.S3.Endpoint | default "minioserver.example.net" }} {{ .Release.OSS.S3.AccessKey }} {{ .Release.OSS.S3.SecretKey }} 
                     mc mb myoss/$bucket  --ignore-existing
                     mc put $packagefilename myoss/$bucket/{{ .Release.Namespace }}/{{ .Release.BuilderName }}/$packagefilename
 
