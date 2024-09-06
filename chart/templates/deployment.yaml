@@ -1,0 +1,89 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "chart.fullname" . }}
+  labels:
+    {{- include "chart.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "chart.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "chart.labels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}       
+      containers:
+        - name: {{ include "chart.name" . }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: {{ include "chart.image" . }}
+          imagePullPolicy: {{ .Values.image.pullPolicy | default .Values.global.imagePullPolicy }}
+          {{- with .Values.args }}
+          args:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}            
+          {{- with .Values.command }}
+          command:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}   
+          ports:
+            - name: http
+              containerPort: {{ .Values.service.port }}
+              protocol: TCP
+          {{- if .Values.envs }}    
+          env:
+            {{- range $key, $value := .Values.envs }}          
+            - name: {{ $key }}
+              value: {{ $value | quote }}
+            {{- end }}
+          {{- end }}  
+          {{- if .Values.healthCheck.enabled }}    
+          livenessProbe:
+            httpGet:
+              path: {{ .Values.healthCheck.httpPath | default "/" }}
+              port: http
+          readinessProbe:
+            httpGet:
+              path: {{ .Values.healthCheck.httpPath | default "/" }}
+              port: http
+          {{- end }}                  
+          {{- if .Values.appConfig.enabled }}    
+          volumeMounts:
+            - name: config
+              mountPath: {{ .Values.appConfig.mountPath | quote }}
+              subPath: {{ .Values.appConfig.fileName | quote }}
+          {{- end }}                                                     
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      {{- if .Values.appConfig.enabled }}      
+      volumes:
+        - name: config
+          configMap:
+            name: {{ include "chart.fullname" . }}
+      {{- end }}                    
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

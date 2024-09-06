@@ -1,0 +1,123 @@
+global:
+  imagePullPolicy: IfNotPresent
+
+
+image:
+  registry: {{ .Values.image.registry | default "registry.cn-shanghai.aliyuncs.com" }}
+  repository: {{ .Values.image.repository | default "nginx" }}
+  tag: {{ .Values.image.tag | default "latest" }}
+  pullPolicy: {{ .Values.image.pullPolicy | default "IfNotPresent" }}
+imagePullSecrets: []
+
+replicaCount: {{ .Values.advanced.replicaCount | default 1 }}
+autoscaling:
+  enabled: {{ .Values.advanced.enabledAutoscaling | default false }}
+  {{- if and .Values.advanced.enabledAutoscaling .Values.advanced.scaling }}
+  minReplicas: {{ .Values.advanced.scaling.minReplicas | default 1 }}
+  maxReplicas: {{ .Values.advanced.scaling.maxReplicas | default 3 }}
+  targetCPUUtilizationPercentage: {{ .Values.advanced.scaling.targetCPUUtilizationPercentage | default 80 }}
+  targetMemoryUtilizationPercentage: {{ .Values.advanced.scaling.targetMemoryUtilizationPercentage | default 80 }}
+  {{- else }}
+  minReplicas: 1
+  maxReplicas: 3
+  targetCPUUtilizationPercentage: 80
+  targetMemoryUtilizationPercentage: 80
+  {{- end }}
+
+
+nameOverride: ""
+fullnameOverride: ""
+
+podAnnotations: {}
+podSecurityContext: {}
+  # fsGroup: 2000
+
+securityContext: {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
+
+ingress:
+  enabled: {{ .Values.networking.enabledIngress | default false }} 
+  className: {{- if .Values.networking.enabledIngress }}{{ .Values.networking.ingress.className | default "" }}{{- else }}""{{- end }}
+  {{- if and .Values.networking.enabledIngress .Values.networking.ingress.annotations }}   
+  annotations:
+    {{- toYaml .Values.networking.ingress.annotations | nindent 4 }}
+  {{- else }}  
+  annotations: {}
+  {{- end }}
+    # kubernetes.io/ingress.class: nginx
+    # kubernetes.io/tls-acme: "true"  
+  hosts:
+    - host: {{- if .Values.networking.enabledIngress }}{{ .Values.networking.ingress.host | default "example.com" }}{{- else }}"example.com"{{- end }}
+      paths:
+        - path: /
+          pathType: ImplementationSpecific    
+  tls: []
+  #  - secretName: chart-example-tls
+  #    hosts:
+  #      - chart-example.local
+
+
+service:
+  type: {{ .Values.networking.serviceType | default "ClusterIP" }}
+  port: {{ .Values.networking.port | default 80 }}
+  nodePort: {{- if eq .Values.networking.serviceType "NodePort" }}{{ .Values.networking.nodePort | default 30000 }}{{- else }}30000{{- end }}
+
+{{- if .Values.advanced.startEntrySetting.args }}
+args:
+  {{- toYaml . | nindent 2 }}
+{{- else }}  
+args: []  
+{{- end }}
+
+{{- if .Values.advanced.startEntrySetting.command }}
+command:
+  {{- toYaml . | nindent 2 }}
+{{- else }}  
+command: []  
+{{- end }}  
+
+
+{{- if .Values.environment.envs }}
+envs:
+  {{- toYaml .Values.environment.envs | nindent 2 }}
+{{- else }}  
+envs: {}
+{{- end }}  
+
+healthCheck:
+  enabled: {{ .Values.advanced.enabledHealthCheck | default false }}
+  httpPath: {{- if .Values.advanced.enabledHealthCheck }}{{ .Values.advanced.httpPathOfHealthCheck | default "/" }}{{- else }}"/"{{- end }}
+
+appConfig:
+  enabled: {{ .Values.advanced.enabledAppConfig | default false }}
+  mountPath: {{- if .Values.advanced.enabledAppConfig }}{{ .Values.advanced.mountPathOfAppConfig | default "/var/appsettings.json" }}{{- else }}"/var/appsettings.json"{{- end }}
+  fileName: {{- if .Values.advanced.enabledAppConfig }}{{ .Values.advanced.fileNameOfAppConfig | default "config.json" }}{{- else }}"config.json"{{- end }}
+  fileContent: |
+    {{- if .Values.advanced.enabledAppConfig }}
+    {{ .Values.advanced.fileContentOfAppConfig | default "" }}
+    {{- end }}         
+
+resources:
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  limits:
+    cpu: {{ .Values.resources.limitsCPU | default "4" }}
+    memory: {{ .Values.resources.limitsMemory | default "4" }}Gi
+  requests:
+    cpu: {{ .Values.resources.requestsCPU | default "10" }}m
+    memory: {{ .Values.resources.requestsMemory | default "64" }}Mi
+
+
+nodeSelector: {}  
+
+tolerations: []
+
+affinity: {}  

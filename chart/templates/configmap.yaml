@@ -1,0 +1,11 @@
+{{- if .Values.appConfig.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "chart.fullname" . }}
+  labels:
+    {{- include "chart.labels" . | nindent 4 }}
+data:
+  {{ .Values.appConfig.fileName }}: |-
+     {{- .Values.appConfig.fileContent | nindent 4 }}
+{{- end }}
