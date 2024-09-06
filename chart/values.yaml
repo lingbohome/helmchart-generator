@@ -1,16 +1,207 @@
+## @section 全局参数
+## @descriptionStart 该节点用于配置一些全局的参数，它在所有的chart及子chart中都能访问的值
+##
+## 全局参数建议定义在[该节点下](#全局参数).
+## @descriptionEnd
+## @param global.imageRegistry [string,default:docker.io] 全局docker镜像仓库的host地址
+## @param global.imagePullPolicy [string,default:IfNotPresent] 全局k8s镜像的拉取策略
+## @param global.imagePullSecrets [array] 全局docker镜像仓库的secret名称数组
+##
 global:
+  imageRegistry: "docker.io"
   imagePullPolicy: IfNotPresent
+  imagePullSecrets: []
 
 
+## @section 通用参数
+## @descriptionStart 该节点用于配置一些通用的参数，
+##
+## 通用参数建议定义在[该节点下](#通用参数).
+## @descriptionEnd
+
+## @param nameOverride [string] 覆盖chart.name的值
+##
+nameOverride: ""
+## @param fullnameOverride [string] 覆盖chart.fullname的值
+##
+fullnameOverride: ""
+## @param imagePullSecrets [array] docker镜像仓库的secret名称数组
+##
+imagePullSecrets: []
+
+
+## @section 镜像配置相关参数
+## @descriptionStart 该节点用于配置镜像，
+##
+## 配置镜像参数建议定义在[该节点下](#镜像配置相关参数).
+## @descriptionEnd
+## @param image.registry [string,default:registry.cn-shanghai.aliyuncs.com] 镜像仓库的host地址
+## @param image.repository [string] 镜像repo
+## @param image.tag [string] 镜像tag
+## @param image.pullPolicy [string,default:IfNotPresent] 镜像拉取策略
+##
 image:
   registry: {{ .Values.image.registry | default "registry.cn-shanghai.aliyuncs.com" }}
   repository: {{ .Values.image.repository | default "nginx" }}
   tag: {{ .Values.image.tag | default "latest" }}
   pullPolicy: {{ .Values.image.pullPolicy | default "IfNotPresent" }}
-imagePullSecrets: []
 
+
+## @section 配置服务网络相关参数
+## @descriptionStart 该节点用于配置网络，
+##
+## 配置网络相关参数建议定义在[该节点下](#网络相关参数).
+## @descriptionEnd
+
+service:
+  ## @param service.type 暴露的服务类型 NodePort|ClusterIP
+  ##
+  type: {{ .Values.networking.serviceType | default "ClusterIP" }}
+  ## @param service.port 暴露的服务端口
+  ##  
+  port: {{ .Values.networking.port | default 80 }}
+  ## @param service.nodePort NodePort服务类型下暴露的外部端口
+  ##  
+  nodePort: {{ if eq .Values.networking.serviceType "NodePort" }}{{ .Values.networking.nodePort | default 30000 }}{{- else }}30000{{- end }}
+
+ingress:
+  ## @param ingress.enabled 是否启用ingress
+  ##
+  enabled: {{ .Values.networking.enabledIngress | default false }}
+  ## @param ingress.className ingress class name
+  ##    
+  className: {{ if .Values.networking.enabledIngress }}{{ .Values.networking.ingress.className | default "" }}{{- else }}""{{- end }}
+  ## @param ingress.annotations [object] ingress annotations
+  ##     
+  {{- if and .Values.networking.enabledIngress .Values.networking.ingress.annotations }}   
+  annotations:
+    {{- toYaml .Values.networking.ingress.annotations | nindent 4 }}
+  {{- else }}  
+  annotations: {}
+  {{- end }}
+    # kubernetes.io/ingress.class: nginx
+    # kubernetes.io/tls-acme: "true"
+  ## @param ingress.hosts[0].host ingress host地址
+  ## @skip ingress.hosts[0].paths
+  ##        
+  hosts:
+    - host: {{ if .Values.networking.enabledIngress }}{{ .Values.networking.ingress.host | default "example.com" }}{{- else }}"example.com"{{- end }}
+      paths:
+        - path: /
+          pathType: ImplementationSpecific
+  ## @param ingress.tls [array] ingress tls配置              
+  tls: []
+  #  - secretName: chart-example-tls
+  #    hosts:
+  #      - chart-example.local
+
+
+
+## @section 配置服务环境变量
+## @descriptionStart 该节点用于配置环境变量，
+##
+## 配置环境相关参数建议定义在[该节点下](#环境变量参数).
+## @descriptionEnd
+
+{{- if .Values.environment.envs }}
+{{- range $key, $value := .Values.environment.envs }}
+## @param envs.{{- $key }} [string,default:{{- $value }}] {{ $key }}
+{{- end }}
+## 
+envs:
+  {{- toYaml .Values.environment.envs | nindent 2 }}
+{{- else }}
+## @param envs [object] 环境变量
+##  
+envs: {}
+{{- end }}
+
+
+
+## @section 配置服务计算资源
+## @descriptionStart 该节点用于配置计算资源，
+##
+## 配置计算资源相关参数建议定义在[该节点下](#计算资源参数).
+## @descriptionEnd
+
+## @param resources.limits [object] 配置服务资源限制 [参考引用](https://kubernetes.io/zh-cn/docs/concepts/configuration/manage-resources-containers/#requests-and-limits)
+## @param resources.requests [object] 配置服务资源请求 [参考引用](https://kubernetes.io/zh-cn/docs/concepts/configuration/manage-resources-containers/#requests-and-limits)
+##
+resources:
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  limits:
+    cpu: {{ .Values.resources.limitsCPU | default "4" }}
+    memory: {{ .Values.resources.limitsMemory | default "4" }}Gi
+  requests:
+    cpu: {{ .Values.resources.requestsCPU | default "10" }}m
+    memory: {{ .Values.resources.requestsMemory | default "64" }}Mi
+
+
+## @section 配置部署相关参数
+## @descriptionStart 该节点用于配置部署参数，
+##
+## 配置部署相关参数建议定义在[该节点下](#部署参数).
+## @descriptionEnd
+
+## @param args [array,nullable] 服务启动参数
+##
+{{- if .Values.advanced.startEntrySetting.args }}
+args:
+  {{- toYaml . | nindent 2 }}
+{{- else }}  
+args: []  
+{{- end }}
+
+## @param command [array,nullable] 服务启动命令
+##
+{{- if .Values.advanced.startEntrySetting.command }}
+command:
+  {{- toYaml . | nindent 2 }}
+{{- else }}  
+command: []  
+{{- end }}  
+
+
+
+healthCheck:
+  ## @param healthCheck.enabled 是否启用健康检查
+  ##
+  enabled: {{ .Values.advanced.enabledHealthCheck | default false }}
+  ## @param healthCheck.httpPath 健康检查的httppath
+  ##  
+  httpPath: {{ if .Values.advanced.enabledHealthCheck }}{{ .Values.advanced.httpPathOfHealthCheck | default "/" }}{{- else }}"/"{{- end }}
+
+appConfig:
+  ## @param appConfig.enabled 是否设置服务配置文件
+  ##
+  enabled: {{ .Values.advanced.enabledAppConfig | default false }}
+  ## @param appConfig.mountPath配置文件挂载路径
+  ##  
+  mountPath: {{ if .Values.advanced.enabledAppConfig }}{{ .Values.advanced.mountPathOfAppConfig | default "/var/appsettings.json" }}{{- else }}"/var/appsettings.json"{{- end }}
+  ## @param appConfig.fileName 配置文件名
+  ##  
+  fileName: {{ if .Values.advanced.enabledAppConfig }}{{ .Values.advanced.fileNameOfAppConfig | default "config.json" }}{{- else }}"config.json"{{- end }}
+  ## @param appConfig.fileContent 配置文件内容
+  ##  
+  fileContent: |
+    {{- if .Values.advanced.enabledAppConfig }}
+    {{ .Values.advanced.fileContentOfAppConfig | default "" }}
+    {{- end }}
+
+
+## @param replicaCount 部署副本数
+##
 replicaCount: {{ .Values.advanced.replicaCount | default 1 }}
 autoscaling:
+  ## @param autoscaling.enabled 是否启用自动伸缩
+  ## @param autoscaling.minReplicas 自动伸缩的最小副本数
+  ## @param autoscaling.maxReplicas 自动伸缩的最大副本数
+  ## @param autoscaling.targetCPUUtilizationPercentage 目标CPU使用率
+  ## @param autoscaling.targetMemoryUtilizationPercentage 目标内存使用率
+  ##
   enabled: {{ .Values.advanced.enabledAutoscaling | default false }}
   {{- if and .Values.advanced.enabledAutoscaling .Values.advanced.scaling }}
   minReplicas: {{ .Values.advanced.scaling.minReplicas | default 1 }}
@@ -25,99 +216,37 @@ autoscaling:
   {{- end }}
 
 
-nameOverride: ""
-fullnameOverride: ""
 
+
+## @section 可选的附加高级参数
+## @descriptionStart 该节点用于配置一些个性化的高级参数，
+##
+## 高级参数建议定义在[该节点下](#高级参数).
+## @descriptionEnd
+## @param podAnnotations [object] 附加的pod annotations注解 [参考说明](https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/)
+##
 podAnnotations: {}
+## @param podSecurityContext [object] 配置PodSecurityContext [参考说明](https://kubernetes.io/zh-cn/docs/tasks/configure-pod-container/security-context/)
+##
 podSecurityContext: {}
   # fsGroup: 2000
 
+## @param securityContext [object] 配置容器SecurityContext [参考说明](https://kubernetes.io/zh-cn/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container)
+##
 securityContext: {}
   # capabilities:
   #   drop:
   #   - ALL
   # readOnlyRootFilesystem: true
   # runAsNonRoot: true
-  # runAsUser: 1000
+  # runAsUser: 1000    
 
-
-ingress:
-  enabled: {{ .Values.networking.enabledIngress | default false }} 
-  className: {{ if .Values.networking.enabledIngress }}{{ .Values.networking.ingress.className | default "" }}{{- else }}""{{- end }}
-  {{- if and .Values.networking.enabledIngress .Values.networking.ingress.annotations }}   
-  annotations:
-    {{- toYaml .Values.networking.ingress.annotations | nindent 4 }}
-  {{- else }}  
-  annotations: {}
-  {{- end }}
-    # kubernetes.io/ingress.class: nginx
-    # kubernetes.io/tls-acme: "true"  
-  hosts:
-    - host: {{ if .Values.networking.enabledIngress }}{{ .Values.networking.ingress.host | default "example.com" }}{{- else }}"example.com"{{- end }}
-      paths:
-        - path: /
-          pathType: ImplementationSpecific    
-  tls: []
-  #  - secretName: chart-example-tls
-  #    hosts:
-  #      - chart-example.local
-
-
-service:
-  type: {{ .Values.networking.serviceType | default "ClusterIP" }}
-  port: {{ .Values.networking.port | default 80 }}
-  nodePort: {{ if eq .Values.networking.serviceType "NodePort" }}{{ .Values.networking.nodePort | default 30000 }}{{- else }}30000{{- end }}
-
-{{- if .Values.advanced.startEntrySetting.args }}
-args:
-  {{- toYaml . | nindent 2 }}
-{{- else }}  
-args: []  
-{{- end }}
-
-{{- if .Values.advanced.startEntrySetting.command }}
-command:
-  {{- toYaml . | nindent 2 }}
-{{- else }}  
-command: []  
-{{- end }}  
-
-
-{{- if .Values.environment.envs }}
-envs:
-  {{- toYaml .Values.environment.envs | nindent 2 }}
-{{- else }}  
-envs: {}
-{{- end }}  
-
-healthCheck:
-  enabled: {{ .Values.advanced.enabledHealthCheck | default false }}
-  httpPath: {{ if .Values.advanced.enabledHealthCheck }}{{ .Values.advanced.httpPathOfHealthCheck | default "/" }}{{- else }}"/"{{- end }}
-
-appConfig:
-  enabled: {{ .Values.advanced.enabledAppConfig | default false }}
-  mountPath: {{ if .Values.advanced.enabledAppConfig }}{{ .Values.advanced.mountPathOfAppConfig | default "/var/appsettings.json" }}{{- else }}"/var/appsettings.json"{{- end }}
-  fileName: {{ if .Values.advanced.enabledAppConfig }}{{ .Values.advanced.fileNameOfAppConfig | default "config.json" }}{{- else }}"config.json"{{- end }}
-  fileContent: |
-    {{- if .Values.advanced.enabledAppConfig }}
-    {{ .Values.advanced.fileContentOfAppConfig | default "" }}
-    {{- end }}         
-
-resources:
-  # We usually recommend not to specify default resources and to leave this as a conscious
-  # choice for the user. This also increases chances charts run on environments with little
-  # resources, such as Minikube. If you do want to specify resources, uncomment the following
-  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
-  limits:
-    cpu: {{ .Values.resources.limitsCPU | default "4" }}
-    memory: {{ .Values.resources.limitsMemory | default "4" }}Gi
-  requests:
-    cpu: {{ .Values.resources.requestsCPU | default "10" }}m
-    memory: {{ .Values.resources.requestsMemory | default "64" }}Mi
-
-
+## @param nodeSelector [object] 调度策略之节点选择器 [参考说明](https://kubernetes.io/zh-cn/docs/concepts/scheduling-eviction/assign-pod-node/#nodeselector)
+##
 nodeSelector: {}  
-
+## @param tolerations [array] 调度策略之污点与容忍度 [参考说明](https://kubernetes.io/zh-cn/docs/concepts/scheduling-eviction/taint-and-toleration/)
+##
 tolerations: []
-
+## @param affinity [object] 调度策略之亲和性 [参考说明](https://kubernetes.io/zh-cn/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity)
+##
 affinity: {}  
