@@ -25,6 +25,9 @@ nameOverride: ""
 ## @param fullnameOverride [string] 覆盖chart.fullname的值
 ##
 fullnameOverride: ""
+## @param category [string] 用于标识服务的类别或用途
+##
+category: {{ .Values.basic.category | default "other" }}
 ## @param imagePullSecrets [array] docker镜像仓库的secret名称数组
 ##
 imagePullSecrets: []
@@ -150,7 +153,7 @@ resources:
 ##
 {{- if .Values.advanced.startEntrySetting.args }}
 args:
-  {{- toYaml . | nindent 2 }}
+  {{- toYaml .Values.advanced.startEntrySetting.args | nindent 2 }}
 {{- else }}  
 args: []  
 {{- end }}
@@ -159,7 +162,7 @@ args: []
 ##
 {{- if .Values.advanced.startEntrySetting.command }}
 command:
-  {{- toYaml . | nindent 2 }}
+  {{- toYaml .Values.advanced.startEntrySetting.command | nindent 2 }}
 {{- else }}  
 command: []  
 {{- end }}  

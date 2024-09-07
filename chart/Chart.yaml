@@ -7,3 +7,7 @@ appVersion: {{ .Values.basic.version | quote }}
 annotations:
   shipper.lingbohome.com/generate-by: shipper
   shipper.lingbohome.com/alias-name: {{ .Values.basic.aliasName | quote }}
+{{- if .Values.basic.keywords }}
+keywords:
+  {{- toYaml .Values.basic.keywords | nindent 2 }} 
+{{- end }}      

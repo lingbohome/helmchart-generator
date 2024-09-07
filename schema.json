@@ -25,6 +25,69 @@
                 "type": "string",
                 "pattern":"^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(\\-[0-9A-Za-z-]+(\\.[0-9A-Za-z-]+)*)?(\\+[0-9A-Za-z-]+(\\.[0-9A-Za-z-]+)*)?$"
               },
+              "category": {
+                "title": "类别/用途",
+                "description": "对应用程序或服务进行分类和区分，具体的业务服务，一般用[前端]或[后端]来标识，非业务类使用其他更能代表意图的类别标识。",
+                "type": "string",
+                "enum": [{
+                    "label": "前端",
+                    "value": "frontend"
+                  },
+                  {
+                    "label": "后端",
+                    "value": "backend"
+                  },
+                  {
+                    "label": "缓存",
+                    "value": "cache"
+                  },
+                  {
+                    "label": "中间件",
+                    "value": "middleware"
+                  },
+                  {
+                    "label": "监控",
+                    "value": "monitoring"
+                  },
+                  {
+                    "label": "数据库",
+                    "value": "database"
+                  },
+                  {
+                    "label": "日志",
+                    "value": "logging"
+                  },
+                  {
+                    "label": "存储",
+                    "value": "storage"
+                  },
+                  {
+                    "label": "网关",
+                    "value": "gateway"
+                  },
+                  {
+                    "label": "认证",
+                    "value": "auth"
+                  },
+                  {
+                    "label": "安全",
+                    "value": "security"
+                  },
+                  {
+                    "label": "其他",
+                    "value": "other"
+                  }
+                ]
+              },
+              "keywords":{
+                 "type": "array",
+                 "title": "功能特性",
+                 "maxItems":3,
+                 "description": "标识您的应用程序或服务所具备的功能特性关键词，最可配3个。",
+                 "items":{
+                   "type":"string"
+                 }
+               },
               "description": {
                 "title": "描述",
                 "description": "描述可包含任意字符，最长 256 个字符。",
@@ -40,13 +103,16 @@
         "order": [
             "name",
             "aliasName",
-            "version",       
-            "description"
+            "version",
+            "category",       
+            "description",
+            "keywords"
           ],
         "required": [
             "name",
             "version",
             "aliasName",
+            "category",
             "description"
           ]
       },
