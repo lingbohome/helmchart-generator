@@ -36,6 +36,9 @@ data:
         tasks:
           - name: helmchart-generator
             params:
+            workspaces:
+              - name: dockerconfig
+                workspace: dockerconfig-ws            
             taskSpec:
               description: Define services metadata based on user visualization and quickly generate helmchart packages.
               params:
@@ -48,7 +51,12 @@ data:
                   type: string
                 - description: The bucket of the built `HELMCHART_PACKAGE`.
                   name: HELMCHART_PACKAGE_BUCKET
-                  type: string                                   
+                  type: string
+              workspaces:
+                - description: Includes a docker `config.json`
+                  mountPath: /root/.config/helm/registry
+                  name: dockerconfig
+                  optional: true                                                     
               steps:            
                 - computeResources: {}
                   image: registry.cn-shanghai.aliyuncs.com/kube-shipper/helmchart-generator:0.2.2
@@ -147,9 +155,9 @@ data:
                       ## @param ingress.enabled 是否启用ingress
                       ##
                       enabled: {{ .Values.networking.enabledIngress | default false }}
-                      ## @param ingress.className [string,nullable]  ingress class name
+                      ## @param ingress.className [string]  ingress class name
                       ##    
-                      className: {{ if .Values.networking.enabledIngress }}{{ .Values.networking.ingress.className | default "" }}{{- else }}""{{- end }}
+                      className: {{ if .Values.networking.enabledIngress }}{{ .Values.networking.ingress.className | default "''" }}{{- else }}""{{- end }}
                       ## @param ingress.annotations [object] ingress annotations
                       ##     
                       {{- if and .Values.networking.enabledIngress .Values.networking.ingress.annotations }}   
@@ -396,9 +404,9 @@ data:
                         schema=https
                     fi
 
-                    mc alias set myoss $schema://{{- .Release.OSS.S3.Endpoint | default "minioserver.example.net" }} {{ .Release.OSS.S3.AccessKey }} {{ .Release.OSS.S3.SecretKey }} 
-                    mc mb myoss/$bucket  --ignore-existing
-                    mc put $packagefilename myoss/$bucket/{{ .Release.Namespace }}/{{ .Release.BuilderName }}/$packagefilename
+                    mc alias set oss $schema://{{- .Release.OSS.S3.Endpoint | default "minioserver.example.net" }} {{ .Release.OSS.S3.AccessKey }} {{ .Release.OSS.S3.SecretKey }} 
+                    mc mb oss/$bucket  --ignore-existing
+                    mc put $packagefilename oss/$bucket/{{ .Release.Namespace }}/{{ .Release.BuilderName }}/$packagefilename
 
                     echo "> helmchart package uploaded..."
                     echo -n "$sha256_hash" | tee "$(results.HELMCHART_PACKAGE_DIGEST.path)"
@@ -457,7 +465,17 @@ data:
                     EOF
         results:
           - name: shipper-artifacts
-            value: $(finally.artifacts-producer.results.ArtifactInfo)  
+            value: $(finally.artifacts-producer.results.ArtifactInfo)
+        workspaces:
+          - name: dockerconfig-ws
+            description: An optional workspace that allows providing a .docker/config.json.
+            optional: true
+      workspaces:  
+          {{- if .Release.OciRegistry.Credentials }}
+        - name: dockerconfig-ws
+          secret:
+            secretName: {{ .Release.OciRegistry.Credentials }}
+          {{- end }}                         
   values.yaml: |
     resources: 
       limitsCPU: 4
