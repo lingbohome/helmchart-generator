@@ -71,7 +71,7 @@ ingress:
   ## @param ingress.enabled 是否启用ingress
   ##
   enabled: {{ .Values.networking.enabledIngress | default false }}
-  ## @param ingress.className ingress class name
+  ## @param ingress.className [string,nullable] ingress class name
   ##    
   className: {{ if .Values.networking.enabledIngress }}{{ .Values.networking.ingress.className | default "" }}{{- else }}""{{- end }}
   ## @param ingress.annotations [object] ingress annotations
@@ -181,13 +181,13 @@ appConfig:
   ## @param appConfig.enabled 是否设置服务配置文件
   ##
   enabled: {{ .Values.advanced.enabledAppConfig | default false }}
-  ## @param appConfig.mountPath配置文件挂载路径
+  ## @param appConfig.mountPath 配置文件挂载路径
   ##  
   mountPath: {{ if .Values.advanced.enabledAppConfig }}{{ .Values.advanced.mountPathOfAppConfig | default "/var/appsettings.json" }}{{- else }}"/var/appsettings.json"{{- end }}
   ## @param appConfig.fileName 配置文件名
   ##  
   fileName: {{ if .Values.advanced.enabledAppConfig }}{{ .Values.advanced.fileNameOfAppConfig | default "config.json" }}{{- else }}"config.json"{{- end }}
-  ## @param appConfig.fileContent 配置文件内容
+  ## @param appConfig.fileContent [string] 配置文件内容
   ##  
   fileContent: |
     {{- if .Values.advanced.enabledAppConfig }}
