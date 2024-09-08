@@ -1,15 +1,15 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: helmchart-generator1
+  name: helmchart-generator
   namespace: shipper-platform
   labels:
     shipper.lingbohome.com/managed: "true"
     shipper.lingbohome.com/templated-by: "builder"
-    template.shipper.lingbohome.com/version: "0.1.0"
+    template.shipper.lingbohome.com/version: "0.2.0"
     template.shipper.lingbohome.com/level: "system"
   annotations:
-    kubesphere.io/alias-name: helmchart包生成器1
+    kubesphere.io/alias-name: helmchart包生成器
     kubesphere.io/creator: system
     kubesphere.io/description: 基于用户可视化定义服务元数据，快速生成helmchart package
     cert.shipper.lingbohome.com/scope: "oss,oci"
@@ -59,7 +59,7 @@ data:
                   optional: true                                                     
               steps:            
                 - computeResources: {}
-                  image: registry.cn-shanghai.aliyuncs.com/kube-shipper/helmchart-generator:0.2.2
+                  image: registry.cn-shanghai.aliyuncs.com/kube-shipper/helmchart-generator:0.2.3
                   name: generate
                   script: |
                     #!/usr/bin/env bash
@@ -410,8 +410,13 @@ data:
 
                     echo "> helmchart package uploaded..."
                     echo -n "$sha256_hash" | tee "$(results.HELMCHART_PACKAGE_DIGEST.path)"
+                    echo -e "\n"
                     echo -n "{{ .Release.Namespace }}/{{ .Release.BuilderName }}/$packagefilename" | tee "$(results.HELMCHART_PACKAGE_OSSNAME.path)" 
-                    echo -n "$bucket" | tee "$(results.HELMCHART_PACKAGE_BUCKET.path)"                                 
+                    echo -e "\n"
+                    echo -n "$bucket" | tee "$(results.HELMCHART_PACKAGE_BUCKET.path)"  
+
+                    echo -e "\n\nShow helmchart README.md  >>>>"
+                    glow /helmchart/README.md -w 150                              
         finally:
           - name: artifacts-producer
             params:
