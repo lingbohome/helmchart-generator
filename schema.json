@@ -5,12 +5,25 @@
         "title": "基本信息",
         "type": "object",
         "properties":{
+            "followBuilderName": {
+              "title": "名称",
+              "description": "是否将chart的名称与构建器名称保持一致",
+              "type": "boolean",
+              "x-shipper-ui": {
+                  "tooltip": "跟随构建器"
+                }
+            },
             "name": {
-                "title": "名称",
+                "title": "设置名称",
                 "description": "设置helmchart的package名称，只能包含小写字母、数字和连字符（-），必须以小写字母开头并以小写字母或数字结尾，最长 63 个字符",
                 "type": "string",
                 "pattern":"[a-z]([-a-z0-9]*[a-z0-9])?",
-                "maxLength": 63
+                "maxLength": 63,
+                "x-shipper-ui": {
+                  "visibleIf":{
+                    "followBuilderName": "false"
+                  }
+                }
               },
               "aliasName": {
                 "title": "别名",
@@ -98,17 +111,70 @@
                   "placeholder": "写个描述吧...",
                   "maxRows": 3
                 }
+              },
+              "home": {
+                "title": "主页",
+                "description": "配置项目的主页地址，如：https://kubernetes.io",
+                "type": "string",
+                "maxLength": 128,
+                "pattern":"^(https?:\\/\\/)?([\\w.-]+)([\\/\\w\\.-]*)*\\/?$"
+              },
+              "icon": {
+                "title": "icon",
+                "description": "用做项目icon的SVG或PNG图片URL",
+                "type": "string",
+                "maxLength": 256,
+                "pattern":"^(https?:\\/\\/)?([\\w.-]+)([\\/\\w\\.-]*)*\\/?$"
+              },
+              "maintainers": {
+                "title": "配置chart的作者",
+                "description": "配置chart的维护者信息",
+                "type": "array",
+                "maxItems": 3,
+                "items":{
+                  "type":"object",
+                  "properties": {
+                    "name": {
+                      "title": "维护者名称",
+                      "type": "string",
+                      "maxLength": 15,
+                      "description": "维护者名称，必填"
+                    },
+                    "email": {
+                      "title": "维护者邮箱",
+                      "description": "维护者邮箱，可选",
+                      "type": "string",
+                      "pattern":"^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$"
+                    },
+                    "url": {
+                      "title": "维护者URL",
+                      "description": "维护者URL，可选",
+                      "type": "string",
+                      "pattern":"^(https?:\\/\\/)?([\\w.-]+)([\\/\\w\\.-]*)*\\/?$",
+                      "x-shipper-ui": {
+                        "placeholder": "如：https://github.com/lingbohome"
+                      }
+                    }
+                  },
+                   "order":["name","email","url"],
+                   "required":["name"]
+                 }
               }
         },
         "order": [
+            "followBuilderName",
             "name",
             "aliasName",
             "version",
+            "home",
+            "icon",
             "category",       
             "description",
-            "keywords"
+            "keywords",
+            "maintainers"
           ],
         "required": [
+            "followBuilderName",
             "name",
             "version",
             "aliasName",
