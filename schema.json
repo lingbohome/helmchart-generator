@@ -87,6 +87,10 @@
                     "value": "security"
                   },
                   {
+                    "label": "网络",
+                    "value": "networking"
+                  },
+                  {
                     "label": "其他",
                     "value": "other"
                   }
@@ -114,7 +118,7 @@
               },
               "home": {
                 "title": "主页",
-                "description": "配置项目的主页地址，如：https://kubernetes.io",
+                "description": "配置项目的主页地址,eg：https://www.example.com",
                 "type": "string",
                 "maxLength": 128,
                 "pattern":"^(https?:\\/\\/)?([\\w.-]+)([\\/\\w\\.-]*)*\\/?$"
