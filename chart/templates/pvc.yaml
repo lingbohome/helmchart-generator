@@ -1,0 +1,17 @@
+{{- if .Values.dataVolume.enabled }}
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: {{ include "chart.fullname" . }}
+  labels:
+    {{- include "chart.labels" . | nindent 4 }}
+spec:
+  accessModes:
+    - {{ .Values.dataVolume.accessMode }}
+  resources:
+    requests:
+      storage: {{ .Values.dataVolume.requestStorage }}Gi
+  {{- if .Values.dataVolume.storageClassName }}    
+  storageClassName: {{ .Values.dataVolume.storageClassName }}
+  {{- end }}
+{{- end }}

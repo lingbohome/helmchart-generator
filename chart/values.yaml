@@ -194,6 +194,26 @@ appConfig:
     {{ .Values.advanced.fileContentOfAppConfig | default "" }}
     {{- end }}
 
+dataVolume:
+  ## @param dataVolume.enabled 是否设置服务的数据卷
+  ##
+  enabled: {{ .Values.advanced.enabledDataVolume | default false }}
+  ## @param dataVolume.mountPath 数据卷挂载路径
+  ##  
+  mountPath: {{ if .Values.advanced.enabledDataVolume }}{{ .Values.advanced.dataVolume.mountPath | default "/data" }}{{- else }}"/data"{{- end }}
+  ## @param dataVolume.subPath 指定挂载数据卷中的子路径
+  ##  
+  subPath: {{ if .Values.advanced.enabledDataVolume }}{{ .Values.advanced.dataVolume.subPath | default "" }}{{- else }}""{{- end }}
+  ## @param dataVolume.accessMode 指定数据卷访问模式
+  ##  
+  accessMode: {{ if .Values.advanced.enabledDataVolume }}{{ .Values.advanced.dataVolume.accessMode | default "ReadWriteOnce" }}{{- else }}"ReadWriteOnce"{{- end }}
+  ## @param dataVolume.requestStorage 指定数据卷申请的容量
+  ##  
+  requestStorage: {{ if .Values.advanced.enabledDataVolume }}{{ .Values.advanced.dataVolume.requestStorage | default 10 }}{{- else }}10{{- end }}
+  ## @param dataVolume.storageClassName 指定创建数据卷的存储类
+  ##  
+  storageClassName: {{ if .Values.advanced.enabledDataVolume }}{{ .Values.advanced.dataVolume.storageClassName | default "" }}{{- else }}""{{- end }}               
+
 
 ## @param replicaCount 部署副本数
 ##

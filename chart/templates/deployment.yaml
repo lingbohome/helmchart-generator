@@ -61,19 +61,35 @@ spec:
               path: {{ .Values.healthCheck.httpPath | default "/" }}
               port: http
           {{- end }}                  
-          {{- if .Values.appConfig.enabled }}    
+          {{- if or .Values.appConfig.enabled .Values.dataVolume.enabled }}    
           volumeMounts:
+            {{- if .Values.appConfig.enabled }}
             - name: config
               mountPath: {{ .Values.appConfig.mountPath | quote }}
               subPath: {{ .Values.appConfig.fileName | quote }}
+            {{- end }}
+            {{- if .Values.dataVolume.enabled }}
+            - name: data
+              mountPath: {{ .Values.dataVolume.mountPath | quote }}
+              {{- if .Values.dataVolume.subPath }}
+              subPath: {{ .Values.dataVolume.subPath | quote }}
+              {{- end }}
+            {{- end }}                 
           {{- end }}                                                     
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
-      {{- if .Values.appConfig.enabled }}      
+      {{- if or .Values.appConfig.enabled .Values.dataVolume.enabled }}      
       volumes:
+        {{- if .Values.appConfig.enabled }} 
         - name: config
           configMap:
             name: {{ include "chart.fullname" . }}
+        {{- end }}
+        {{- if .Values.dataVolume.enabled }} 
+        - name: data
+          persistentVolumeClaim:
+            claimName: {{ include "chart.fullname" . }}
+        {{- end }}    
       {{- end }}                    
       {{- with .Values.nodeSelector }}
       nodeSelector:
