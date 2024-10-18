@@ -617,8 +617,11 @@
                     },
                     "subPath": {
                       "title": "挂载子路径",
-                      "description": "指定挂载数据卷中的子路径",
-                      "type": "string"
+                      "description": "根据需要，指定挂载数据卷中的子路径 [可选]",
+                      "type": "string",
+                      "x-shipper-ui": {
+                        "placeholder": "如：subdir1/subdir2"
+                      }                      
                     }, 
                     "accessMode": {
                       "title": "访问模式",
@@ -690,15 +693,14 @@
                 },
                 "order": [
                   "mountPath",
-                  "maxReplicas",
-                  "targetCPUUtilizationPercentage",
-                  "targetMemoryUtilizationPercentage"
+                  "accessMode",
+                  "requestStorage",
+                  "subPath",
+                  "storageClassName"
                 ],
                 "required": [
                   "mountPath",
-                  "subPath",
                   "accessMode",
-                  "storageClassName",
                   "requestStorage"
                 ]                                      
               },                                                                                     
