@@ -6,7 +6,7 @@ metadata:
   labels:
     shipper.lingbohome.com/managed: "true"
     shipper.lingbohome.com/templated-by: "builder"
-    template.shipper.lingbohome.com/version: "0.3.1"
+    template.shipper.lingbohome.com/version: "0.4.0"
     template.shipper.lingbohome.com/level: "system"
   annotations:
     kubesphere.io/alias-name: helmchart包生成器
@@ -62,7 +62,7 @@ data:
                   optional: true                                                     
               steps:            
                 - computeResources: {}
-                  image: registry.cn-shanghai.aliyuncs.com/kube-shipper/helmchart-generator:0.2.3
+                  image: registry.cn-shanghai.aliyuncs.com/kube-shipper/helmchart-generator:0.3.0
                   name: generate
                   script: |
                     #!/usr/bin/env bash
